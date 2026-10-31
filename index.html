@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -81,7 +82,97 @@ button.action{width:100%;padding:15px;border:0;border-radius:9px;font-weight:bol
 .result-total.highlight{border-color:var(--gold)}
 .result-total.highlight strong{color:var(--gold);font-size:27px}
 .result-footer{text-align:center;font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:18px}
-@media(max-width:370px){body{padding:10px 8px}.panel{padding:13px}.result-sheet{padding:15px 11px}}
+
+/* COMPACT MOBILE LAYOUT */
+@media(max-width:600px){
+  body{padding:3px 6px 5px}
+  header{
+    padding:4px 3px 7px;
+    margin-bottom:5px;
+  }
+  .logo{font-size:25px;letter-spacing:4px}
+  .subtitle{font-size:7px;letter-spacing:2px;margin-top:1px}
+  h1{font-size:16px;margin:4px 0 2px}
+  .muted{font-size:9px}
+
+  .panel{
+    padding:7px 9px;
+    margin-bottom:5px;
+    border-radius:9px;
+  }
+  .section{
+    font-size:9px;
+    letter-spacing:1.5px;
+    margin-bottom:5px;
+  }
+  label{font-size:10px;margin-bottom:2px}
+  input[type=text],input[type=date]{
+    padding:5px 7px;
+    font-size:12px;
+    margin-bottom:5px;
+    border-radius:6px;
+  }
+  .difficulty{gap:6px}
+  .diff{padding:5px 3px;border-radius:7px}
+  .diff strong{font-size:11px;margin-bottom:1px}
+  .diff small{font-size:8px}
+
+  .rating{padding:4px 0}
+  .rating-head{gap:6px}
+  .rating-name{font-size:11px}
+  .score{font-size:15px}
+  .description{
+    font-size:8px;
+    line-height:1.15;
+    margin:1px 0 2px;
+  }
+  input[type=range]{
+    display:block;
+    height:15px;
+    margin:0;
+  }
+  .range-labels{font-size:7px;line-height:1}
+  
+  .totals{gap:6px}
+  .total-box{padding:6px 3px;border-radius:7px}
+  .total-box small{font-size:8px;margin-bottom:2px}
+  .total-number{font-size:18px}
+
+  .timer{font-size:9px;margin:3px 0 1px}
+  button.action{
+    padding:8px;
+    margin-top:5px;
+    font-size:11px;
+    border-radius:7px;
+  }
+  .error{font-size:9px;margin-top:4px}
+  footer{display:none}
+
+  /* Compact result sheet */
+  .result-sheet{padding:12px 10px;border-radius:11px}
+  .result-header{padding-bottom:8px}
+  .result-header h2{font-size:15px;margin:6px 0 3px}
+  .result-header p{font-size:8px}
+  .player{padding:9px 0}
+  .player-name{font-size:20px}
+  .player-meta{font-size:10px;margin-top:3px}
+  .result-row{padding:6px 3px;font-size:11px}
+  .result-row strong{font-size:14px}
+  .result-totals{gap:6px;margin-top:9px}
+  .result-total{padding:8px 3px}
+  .result-total small{font-size:8px;margin-bottom:3px}
+  .result-total strong{font-size:19px}
+  .result-total.highlight strong{font-size:22px}
+  .result-footer{font-size:7px;margin-top:8px}
+  #resultActions .muted{font-size:9px}
+}
+
+@media(max-width:370px){
+  body{padding:3px 5px}
+  .panel{padding:6px 7px}
+  .description{font-size:7.5px}
+}
+
 @media print{
   body{background:#101510!important;padding:0}
   header,#formView,#resultActions{display:none!important}
@@ -237,6 +328,127 @@ function scores() {
 
 function calculate() {
   const values = scores();
+  const total = values.reduce((a,b)=>a+b,0);
+  const final = total * multiplier;
+  $("total").textContent = total + " / 50";
+  $("final").textContent = final.toFixed(1).replace(/\.0$/,"") +
+    (difficulty === "easy" ? " / 60" : " / 75");
+  values.forEach((v,i)=>$("v"+i).textContent=v);
+}
+
+function selectDifficulty(level) {
+  difficulty = level;
+  multiplier = level === "easy" ? 1.2 : 1.5;
+  $("easy").classList.toggle("selected",level==="easy");
+  $("hard").classList.toggle("selected",level==="hard");
+  calculate();
+}
+
+function resetTimer() {
+  if (submitted) return;
+  hasInteracted = true;
+  clearInterval(timer);
+  remaining = 30;
+  $("countdown").textContent = remaining;
+
+  timer = setInterval(()=>{
+    remaining--;
+    $("countdown").textContent = remaining;
+
+    if (remaining <= 0) {
+      clearInterval(timer);
+      resetForm();
+    }
+  },1000);
+}
+
+function resetForm() {
+  clearInterval(timer);
+  submitted = false;
+  hasInteracted = false;
+  remaining = 30;
+
+  $("player").value = "";
+  $("date").value = "";
+  [0,1,2,3,4].forEach(i=>{
+    $("s"+i).value = 0;
+  });
+
+  selectDifficulty("easy");
+  calculate();
+  $("countdown").textContent = 30;
+  $("error").style.display = "none";
+  $("resultView").classList.add("hidden");
+  $("formView").classList.remove("hidden");
+}
+
+function finishRating() {
+  if (!$("player").value.trim()) {
+    $("error").style.display = "block";
+    $("player").focus();
+    return;
+  }
+
+  clearInterval(timer);
+  submitted = true;
+
+  const values = scores();
+  const total = values.reduce((a,b)=>a+b,0);
+  const final = total * multiplier;
+  const max = difficulty === "easy" ? 60 : 75;
+
+  $("outName").textContent = $("player").value.trim();
+  $("outDate").textContent = $("date").value
+    ? "Fight Date: " + $("date").value
+    : "Fight Date: Not specified";
+  $("outDifficulty").textContent =
+    (difficulty === "easy" ? "Easy – Prime Ceratosaurus" : "Hard – Adult Ceratosaurus") +
+    " · ×" + multiplier;
+
+  $("outRatings").innerHTML = categories.map((name,i)=>
+    '<div class="result-row"><span>'+name+'</span><strong>'+values[i]+' / 10</strong></div>'
+  ).join("");
+
+  $("outTotal").textContent = total + " / 50";
+  $("outFinal").textContent =
+    final.toFixed(1).replace(/\.0$/,"") + " / " + max;
+
+  $("formView").classList.add("hidden");
+  $("resultView").classList.remove("hidden");
+}
+
+[0,1,2,3,4].forEach(i=>{
+  $("s"+i).addEventListener("input",()=>{
+    calculate();
+    resetTimer();
+  });
+});
+
+$("player").addEventListener("input",()=>{
+  $("error").style.display = "none";
+  resetTimer();
+});
+
+$("date").addEventListener("change",resetTimer);
+
+$("easy").addEventListener("click",()=>{
+  selectDifficulty("easy");
+  resetTimer();
+});
+
+$("hard").addEventListener("click",()=>{
+  selectDifficulty("hard");
+  resetTimer();
+});
+
+$("finish").addEventListener("click",finishRating);
+$("another").addEventListener("click",resetForm);
+
+calculate();
+</script>
+</body>
+</html>
+nst values = scores();
   const total = values.reduce((a,b)=>a+b,0);
   const final = total * multiplier;
   $("total").textContent = total + " / 50";
