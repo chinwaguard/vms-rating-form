@@ -1,571 +1,330 @@
+<!DOCTYPE html>  <html lang="en">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1">  
+<title>VMS – Trike vs Team Cera</title>  
+<style>  
+:root {  
+  --bg:#101510;--panel:#1c261e;--green:#a5c17c;  
+  --gold:#d8b76e;--text:#edf1e9;--muted:#a3ad9e;  
+  --border:#39483a;  
+}  
+*{box-sizing:border-box}  
+body{  
+  margin:0;padding:18px 12px 35px;  
+  background:radial-gradient(ellipse at top,#2a392b,#101510 70%);  
+  color:var(--text);font-family:Arial,sans-serif  
+}  
+.container{max-width:620px;margin:auto}  
+header{text-align:center;padding:20px 8px;border-bottom:1px solid var(--border);margin-bottom:20px}  
+.logo{font-size:38px;font-weight:900;letter-spacing:6px;color:var(--green)}  
+.subtitle{font-size:11px;letter-spacing:3px;color:var(--gold);margin-top:5px}  
+h1{font-size:23px;margin:18px 0 5px}  
+.muted{color:var(--muted);font-size:13px}  
+.panel{  
+  background:linear-gradient(145deg,#253127,#19211b);  
+  border:1px solid var(--border);border-radius:13px;  
+  padding:17px;margin-bottom:15px  
+}  
+.section{color:var(--green);font-size:12px;font-weight:bold;letter-spacing:2px;margin-bottom:17px}  
+label{display:block;font-size:13px;font-weight:bold;margin-bottom:8px}  
+input[type=text],input[type=date]{  
+  width:100%;padding:13px;background:#111812;color:white;  
+  border:1px solid var(--border);border-radius:8px;  
+  font-size:15px;margin-bottom:17px  
+}  
+.difficulty{display:grid;grid-template-columns:1fr 1fr;gap:10px}  
+.diff{  
+  padding:13px 6px;background:#111812;color:white;  
+  border:1px solid var(--border);border-radius:9px;cursor:pointer  
+}  
+.diff.selected{border:2px solid var(--green);background:#30402f}  
+.diff strong{display:block;margin-bottom:5px}  
+.diff small{color:var(--muted);font-size:11px}  
+.rating{padding:14px 0;border-bottom:1px solid var(--border)}  
+.rating:last-child{border:0}  
+.rating-head{display:flex;justify-content:space-between;align-items:center;gap:10px}  
+.rating-name{font-weight:bold;font-size:15px}  
+.score{font-size:21px;color:var(--gold);font-weight:bold}  
+.description{font-size:12px;color:var(--muted);line-height:1.5;margin:7px 0 12px}  
+input[type=range]{width:100%;accent-color:var(--green);cursor:pointer}  
+.range-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}  
+.totals{display:grid;grid-template-columns:1fr 1fr;gap:10px}  
+.total-box{text-align:center;background:#111812;border:1px solid var(--border);border-radius:9px;padding:14px 5px}  
+.total-box small{display:block;color:var(--muted);font-size:10px;letter-spacing:1px;margin-bottom:8px}  
+.total-number{font-size:25px;font-weight:900;color:var(--green)}  
+.final-number{color:var(--gold)}  
+button.action{width:100%;padding:15px;border:0;border-radius:9px;font-weight:bold;cursor:pointer;margin-top:12px}  
+.finish{background:var(--green);color:#101510}  
+.another{background:#344235;color:white}  
+.timer{text-align:center;color:var(--muted);font-size:12px;margin:14px 0 5px}  
+.timer strong{color:var(--gold)}  
+.error{display:none;color:#ff9d83;font-size:12px;margin-top:10px}  
+.hidden{display:none!important}  
+.result-sheet{  
+  background:linear-gradient(145deg,#253127,#111812);  
+  border:2px solid #819d62;border-radius:14px;padding:20px 16px  
+}  
+.result-header{text-align:center;border-bottom:1px solid var(--border);padding-bottom:16px}  
+.result-header h2{font-size:18px;margin:12px 0 5px}  
+.result-header p{font-size:10px;color:var(--gold);letter-spacing:2px}  
+.player{text-align:center;padding:17px 0}  
+.player-name{font-size:24px;font-weight:900;overflow-wrap:anywhere}  
+.player-meta{font-size:12px;color:var(--muted);margin-top:6px}  
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:11px 3px;border-bottom:1px solid var(--border);font-size:13px;gap:10px}  
+.result-row strong{color:var(--gold);font-size:17px}  
+.result-totals{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:17px}  
+.result-total{text-align:center;padding:13px 4px;background:#111812;border:1px solid var(--border);border-radius:9px}  
+.result-total small{display:block;color:var(--muted);font-size:10px;margin-bottom:8px}  
+.result-total strong{font-size:23px;color:var(--green)}  
+.result-total.highlight{border-color:var(--gold)}  
+.result-total.highlight strong{color:var(--gold);font-size:27px}  
+.result-footer{text-align:center;font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:18px}  
+@media(max-width:370px){body{padding:10px 8px}.panel{padding:13px}.result-sheet{padding:15px 11px}}  
+@media print{  
+  body{background:#101510!important;padding:0}  
+  header,#formView,#resultActions{display:none!important}  
+  #resultView{display:block!important}  
+}  
+</style>  
+</head>  
+<body>  
+<div class="container">  <header>  
+  <div class="logo">VMS</div>  
+  <div class="subtitle">SURVIVE · FIGHT · DOMINATE</div>  
+  <h1>Trike vs Team Cera</h1>  
+  <div class="muted">Individual Player Rating Form</div>  
+</header>  <main id="formView">  <section class="panel">  
+  <div class="section">01 / PLAYER INFORMATION</div>  
+  <label for="player">Player Name *</label>  
+  <input id="player" type="text" maxlength="40" placeholder="Enter player name">  <label for="date">Fight Date</label>
+<input id="date" type="date">
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VMS – Trike vs Team Cera</title>
-<style>
-:root {
-  --bg:#101510;--panel:#1c261e;--green:#a5c17c;
-  --gold:#d8b76e;--text:#edf1e9;--muted:#a3ad9e;
-  --border:#39483a;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;padding:18px 12px 35px;
-  background:radial-gradient(ellipse at top,#2a392b,#101510 70%);
-  color:var(--text);font-family:Arial,sans-serif
-}
-.container{max-width:620px;margin:auto}
-header{text-align:center;padding:20px 8px;border-bottom:1px solid var(--border);margin-bottom:20px}
-.logo{font-size:38px;font-weight:900;letter-spacing:6px;color:var(--green)}
-.subtitle{font-size:11px;letter-spacing:3px;color:var(--gold);margin-top:5px}
-h1{font-size:23px;margin:18px 0 5px}
-.muted{color:var(--muted);font-size:13px}
-.panel{
-  background:linear-gradient(145deg,#253127,#19211b);
-  border:1px solid var(--border);border-radius:13px;
-  padding:17px;margin-bottom:15px
-}
-.section{color:var(--green);font-size:12px;font-weight:bold;letter-spacing:2px;margin-bottom:17px}
-label{display:block;font-size:13px;font-weight:bold;margin-bottom:8px}
-input[type=text],input[type=date]{
-  width:100%;padding:13px;background:#111812;color:white;
-  border:1px solid var(--border);border-radius:8px;
-  font-size:15px;margin-bottom:17px
-}
-.difficulty{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.diff{
-  padding:13px 6px;background:#111812;color:white;
-  border:1px solid var(--border);border-radius:9px;cursor:pointer
-}
-.diff.selected{border:2px solid var(--green);background:#30402f}
-.diff strong{display:block;margin-bottom:5px}
-.diff small{color:var(--muted);font-size:11px}
-.rating{padding:14px 0;border-bottom:1px solid var(--border)}
-.rating:last-child{border:0}
-.rating-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.rating-name{font-weight:bold;font-size:15px}
-.score{font-size:21px;color:var(--gold);font-weight:bold}
-.description{font-size:12px;color:var(--muted);line-height:1.5;margin:7px 0 12px}
-input[type=range]{width:100%;accent-color:var(--green);cursor:pointer}
-.range-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
-.totals{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.total-box{text-align:center;background:#111812;border:1px solid var(--border);border-radius:9px;padding:14px 5px}
-.total-box small{display:block;color:var(--muted);font-size:10px;letter-spacing:1px;margin-bottom:8px}
-.total-number{font-size:25px;font-weight:900;color:var(--green)}
-.final-number{color:var(--gold)}
-button.action{width:100%;padding:15px;border:0;border-radius:9px;font-weight:bold;cursor:pointer;margin-top:12px}
-.finish{background:var(--green);color:#101510}
-.another{background:#344235;color:white}
-.timer{text-align:center;color:var(--muted);font-size:12px;margin:14px 0 5px}
-.timer strong{color:var(--gold)}
-.error{display:none;color:#ff9d83;font-size:12px;margin-top:10px}
-.hidden{display:none!important}
-.result-sheet{
-  background:linear-gradient(145deg,#253127,#111812);
-  border:2px solid #819d62;border-radius:14px;padding:20px 16px
-}
-.result-header{text-align:center;border-bottom:1px solid var(--border);padding-bottom:16px}
-.result-header h2{font-size:18px;margin:12px 0 5px}
-.result-header p{font-size:10px;color:var(--gold);letter-spacing:2px}
-.player{text-align:center;padding:17px 0}
-.player-name{font-size:24px;font-weight:900;overflow-wrap:anywhere}
-.player-meta{font-size:12px;color:var(--muted);margin-top:6px}
-.result-row{display:flex;justify-content:space-between;align-items:center;padding:11px 3px;border-bottom:1px solid var(--border);font-size:13px;gap:10px}
-.result-row strong{color:var(--gold);font-size:17px}
-.result-totals{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:17px}
-.result-total{text-align:center;padding:13px 4px;background:#111812;border:1px solid var(--border);border-radius:9px}
-.result-total small{display:block;color:var(--muted);font-size:10px;margin-bottom:8px}
-.result-total strong{font-size:23px;color:var(--green)}
-.result-total.highlight{border-color:var(--gold)}
-.result-total.highlight strong{color:var(--gold);font-size:27px}
-.result-footer{text-align:center;font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:18px}
+<label>Difficulty</label>
 
-/* COMPACT MOBILE LAYOUT */
-@media(max-width:600px){
-  body{padding:3px 6px 5px}
-  header{
-    padding:4px 3px 7px;
-    margin-bottom:5px;
-  }
-  .logo{font-size:25px;letter-spacing:4px}
-  .subtitle{font-size:7px;letter-spacing:2px;margin-top:1px}
-  h1{font-size:16px;margin:4px 0 2px}
-  .muted{font-size:9px}
-
-  .panel{
-    padding:7px 9px;
-    margin-bottom:5px;
-    border-radius:9px;
-  }
-  .section{
-    font-size:9px;
-    letter-spacing:1.5px;
-    margin-bottom:5px;
-  }
-  label{font-size:10px;margin-bottom:2px}
-  input[type=text],input[type=date]{
-    padding:5px 7px;
-    font-size:12px;
-    margin-bottom:5px;
-    border-radius:6px;
-  }
-  .difficulty{gap:6px}
-  .diff{padding:5px 3px;border-radius:7px}
-  .diff strong{font-size:11px;margin-bottom:1px}
-  .diff small{font-size:8px}
-
-  .rating{padding:4px 0}
-  .rating-head{gap:6px}
-  .rating-name{font-size:11px}
-  .score{font-size:15px}
-  .description{
-    font-size:8px;
-    line-height:1.15;
-    margin:1px 0 2px;
-  }
-  input[type=range]{
-    display:block;
-    height:15px;
-    margin:0;
-  }
-  .range-labels{font-size:7px;line-height:1}
+  <div class="difficulty">  
+    <button type="button" class="diff selected" id="easy">  
+      <strong>Easy</strong><small>Prime Ceratosaurus · ×1.2</small>  
+    </button>  
+    <button type="button" class="diff" id="hard">  
+      <strong>Hard</strong><small>Adult Ceratosaurus · ×1.5</small>  
+    </button>  
+  </div>  
+</section>  <section class="panel">  
+  <div class="section">02 / PLAYER PERFORMANCE</div>    <div class="rating">  
+    <div class="rating-head"><span class="rating-name">Survival</span><span class="score" id="v0">0</span></div>  
+    <p class="description">How long did the fight go on? Rate how long the player survived during the fight.</p>  
+    <input type="range" min="0" max="10" value="0" id="s0">  
+    <div class="range-labels"><span>0 – Poor</span><span>10 – Excellent</span></div>  
+  </div>    <div class="rating">  
+    <div class="rating-head"><span class="rating-name">Damage Taken</span><span class="score" id="v1">0</span></div>  
+    <p class="description">How much damage did the Ceratosaurus receive? Consider total damage taken, including damage received before healing.</p>  
+    <input type="range" min="0" max="10" value="0" id="s1">  
+    <div class="range-labels"><span>0 – Poor</span><span>10 – Excellent</span></div>  
+  </div>    <div class="rating">  
+    <div class="rating-head"><span class="rating-name">Damage Dealt</span><span class="score" id="v2">0</span></div>  
+    <p class="description">How much damage did the Ceratosaurus deal to the Trike? Evaluate the player's contribution to damaging the Trike.</p>  
+    <input type="range" min="0" max="10" value="0" id="s2">  
+    <div class="range-labels"><span>0 – Poor</span><span>10 – Excellent</span></div>  
+  </div>    <div class="rating">  
+    <div class="rating-head"><span class="rating-name">Solo Fight</span><span class="score" id="v3">0</span></div>  
+    <p class="description">How well did the Ceratosaurus keep the Trike occupied while being the only active Cera? If no solo fight occurred, assign 0 points.</p>  
+    <input type="range" min="0" max="10" value="0" id="s3">  
+    <div class="range-labels"><span>0 – Poor / No solo fight</span><span>10 – Excellent</span></div>  
+  </div>    <div class="rating">  
+    <div class="rating-head"><span class="rating-name">Combat Performance</span><span class="score" id="v4">0</span></div>  
+    <p class="description">Overall skill, tactics, decision-making, teamwork and combat ability.</p>  
+    <input type="range" min="0" max="10" value="0" id="s4">  
+    <div class="range-labels"><span>0 – Poor</span><span>10 – Excellent</span></div>  
+  </div>  
+</section>  <section class="panel">  
+  <div class="section">03 / SCORE CALCULATION</div>  
+  <div class="totals">  
+    <div class="total-box">  
+      <small>TOTAL SCORE</small>  
+      <div class="total-number" id="total">0 / 50</div>  
+    </div>  
+    <div class="total-box">  
+      <small>FINAL SCORE</small>  
+      <div class="total-number final-number" id="final">0 / 60</div>  
+    </div>  
+  </div>  
+  <div class="timer">Reset in <strong id="countdown">30</strong> seconds of inactivity</div>  
+  <button type="button" class="action finish" id="finish">FINISH RATING</button>  
+  <div class="error" id="error">Please enter the player's name before finishing.</div>  
+</section>  
+</main>  <section id="resultView" class="hidden">  
+  <div class="result-sheet" id="capture">  
+    <div class="result-header">  
+      <div class="logo">VMS</div>  
+      <h2>PLAYER PERFORMANCE</h2>  
+      <p>TRIKE VS TEAM CERA · OFFICIAL RATING</p>  
+    </div>  
+    <div class="player">  
+      <div class="player-name" id="outName"></div>  
+      <div class="player-meta" id="outDate"></div>  
+      <div class="player-meta" id="outDifficulty"></div>  
+    </div>  
+    <div id="outRatings"></div>  
+    <div class="result-totals">  
+      <div class="result-total">  
+        <small>TOTAL SCORE</small>  
+        <strong id="outTotal"></strong>  
+      </div>  
+      <div class="result-total highlight">  
+        <small>FINAL SCORE</small>  
+        <strong id="outFinal"></strong>  
+      </div>  
+    </div>  
+    <div class="result-footer">VMS · SURVIVE · FIGHT · DOMINATE</div>  
+  </div>  
+  <div id="resultActions">  
+    <button type="button" class="action another" id="another">RATE ANOTHER PLAYER</button>  
+    <p class="muted" style="text-align:center;line-height:1.5">  
+      Take a screenshot of this completed rating sheet and attach it to your Discord submission.  
+    </p>  
+  </div>  
+</section>  <footer>VMS COMMUNITY · TRIKE VS TEAM CERA</footer>  
+</div>  <script>  
+const categories = [  
+  "Survival",  
+  "Damage Taken",  
+  "Damage Dealt",  
+  "Solo Fight",  
+  "Combat Performance"  
+];  
   
-  .totals{gap:6px}
-  .total-box{padding:6px 3px;border-radius:7px}
-  .total-box small{font-size:8px;margin-bottom:2px}
-  .total-number{font-size:18px}
-
-  .timer{font-size:9px;margin:3px 0 1px}
-  button.action{
-    padding:8px;
-    margin-top:5px;
-    font-size:11px;
-    border-radius:7px;
-  }
-  .error{font-size:9px;margin-top:4px}
-  footer{display:none}
-
-  /* Compact result sheet */
-  .result-sheet{padding:12px 10px;border-radius:11px}
-  .result-header{padding-bottom:8px}
-  .result-header h2{font-size:15px;margin:6px 0 3px}
-  .result-header p{font-size:8px}
-  .player{padding:9px 0}
-  .player-name{font-size:20px}
-  .player-meta{font-size:10px;margin-top:3px}
-  .result-row{padding:6px 3px;font-size:11px}
-  .result-row strong{font-size:14px}
-  .result-totals{gap:6px;margin-top:9px}
-  .result-total{padding:8px 3px}
-  .result-total small{font-size:8px;margin-bottom:3px}
-  .result-total strong{font-size:19px}
-  .result-total.highlight strong{font-size:22px}
-  .result-footer{font-size:7px;margin-top:8px}
-  #resultActions .muted{font-size:9px}
-}
-
-@media(max-width:370px){
-  body{padding:3px 5px}
-  .panel{padding:6px 7px}
-  .description{font-size:7.5px}
-}
-
-@media print{
-  body{background:#101510!important;padding:0}
-  header,#formView,#resultActions{display:none!important}
-  #resultView{display:block!important}
-}
-</style>
-</head>
-<body>
-<div class="container">
-
-<header>
-  <div class="logo">VMS</div>
-  <div class="subtitle">SURVIVE · FIGHT · DOMINATE</div>
-  <h1>Trike vs Team Cera</h1>
-  <div class="muted">Individual Player Rating Form</div>
-</header>
-
-<main id="formView">
-
-<section class="panel">
-  <div class="section">01 / PLAYER INFORMATION</div>
-  <label for="player">Player Name *</label>
-  <input id="player" type="text" maxlength="40" placeholder="Enter player name">
-
-  <label for="date">Fight Date</label>
-  <input id="date" type="date">
-
-  <label>Difficulty</label>
-  <div class="difficulty">
-    <button type="button" class="diff selected" id="easy">
-      <strong>Easy</strong><small>Prime Ceratosaurus · ×1.2</small>
-    </button>
-    <button type="button" class="diff" id="hard">
-      <strong>Hard</strong><small>Adult Ceratosaurus · ×1.5</small>
-    </button>
-  </div>
-</section>
-
-<section class="panel">
-  <div class="section">02 / PLAYER PERFORMANCE</div>
-
-  <div class="rating">
-    <div class="rating-head"><span class="rating-name">Survival</span><span class="score" id="v0">0</span></div>
-    <p class="description">How long did the fight go on? Rate how long the player survived during the fight.</p>
-    <input type="range" min="0" max="10" value="0" id="s0">
-    <div class="range-labels"><span>0 – Poor</span><span>10 – Excellent</span></div>
-  </div>
-
-  <div class="rating">
-    <div class="rating-head"><span class="rating-name">Damage Taken</span><span class="score" id="v1">0</span></div>
-    <p class="description">How much damage did the Ceratosaurus receive? Consider total damage taken, including damage received before healing.</p>
-    <input type="range" min="0" max="10" value="0" id="s1">
-    <div class="range-labels"><span>0 – Poor</span><span>10 – Excellent</span></div>
-  </div>
-
-  <div class="rating">
-    <div class="rating-head"><span class="rating-name">Damage Dealt</span><span class="score" id="v2">0</span></div>
-    <p class="description">How much damage did the Ceratosaurus deal to the Trike? Evaluate the player's contribution to damaging the Trike.</p>
-    <input type="range" min="0" max="10" value="0" id="s2">
-    <div class="range-labels"><span>0 – Poor</span><span>10 – Excellent</span></div>
-  </div>
-
-  <div class="rating">
-    <div class="rating-head"><span class="rating-name">Solo Fight</span><span class="score" id="v3">0</span></div>
-    <p class="description">How well did the Ceratosaurus keep the Trike occupied while being the only active Cera? If no solo fight occurred, assign 0 points.</p>
-    <input type="range" min="0" max="10" value="0" id="s3">
-    <div class="range-labels"><span>0 – Poor / No solo fight</span><span>10 – Excellent</span></div>
-  </div>
-
-  <div class="rating">
-    <div class="rating-head"><span class="rating-name">Combat Performance</span><span class="score" id="v4">0</span></div>
-    <p class="description">Overall skill, tactics, decision-making, teamwork and combat ability.</p>
-    <input type="range" min="0" max="10" value="0" id="s4">
-    <div class="range-labels"><span>0 – Poor</span><span>10 – Excellent</span></div>
-  </div>
-</section>
-
-<section class="panel">
-  <div class="section">03 / SCORE CALCULATION</div>
-  <div class="totals">
-    <div class="total-box">
-      <small>TOTAL SCORE</small>
-      <div class="total-number" id="total">0 / 50</div>
-    </div>
-    <div class="total-box">
-      <small>FINAL SCORE</small>
-      <div class="total-number final-number" id="final">0 / 60</div>
-    </div>
-  </div>
-  <div class="timer">Reset in <strong id="countdown">30</strong> seconds of inactivity</div>
-  <button type="button" class="action finish" id="finish">FINISH RATING</button>
-  <div class="error" id="error">Please enter the player's name before finishing.</div>
-</section>
-</main>
-
-<section id="resultView" class="hidden">
-  <div class="result-sheet" id="capture">
-    <div class="result-header">
-      <div class="logo">VMS</div>
-      <h2>PLAYER PERFORMANCE</h2>
-      <p>TRIKE VS TEAM CERA · OFFICIAL RATING</p>
-    </div>
-    <div class="player">
-      <div class="player-name" id="outName"></div>
-      <div class="player-meta" id="outDate"></div>
-      <div class="player-meta" id="outDifficulty"></div>
-    </div>
-    <div id="outRatings"></div>
-    <div class="result-totals">
-      <div class="result-total">
-        <small>TOTAL SCORE</small>
-        <strong id="outTotal"></strong>
-      </div>
-      <div class="result-total highlight">
-        <small>FINAL SCORE</small>
-        <strong id="outFinal"></strong>
-      </div>
-    </div>
-    <div class="result-footer">VMS · SURVIVE · FIGHT · DOMINATE</div>
-  </div>
-  <div id="resultActions">
-    <button type="button" class="action another" id="another">RATE ANOTHER PLAYER</button>
-    <p class="muted" style="text-align:center;line-height:1.5">
-      Take a screenshot of this completed rating sheet and attach it to your Discord submission.
-    </p>
-  </div>
-</section>
-
-<footer>VMS COMMUNITY · TRIKE VS TEAM CERA</footer>
-</div>
-
-<script>
-const categories = [
-  "Survival",
-  "Damage Taken",
-  "Damage Dealt",
-  "Solo Fight",
-  "Combat Performance"
-];
-
-let difficulty = "easy";
-let multiplier = 1.2;
-let timer = null;
-let remaining = 30;
-let hasInteracted = false;
-let submitted = false;
-
-const $ = id => document.getElementById(id);
-
-function scores() {
-  return [0,1,2,3,4].map(i => Number($("s"+i).value));
-}
-
-function calculate() {
-  const values = scores();
-  const total = values.reduce((a,b)=>a+b,0);
-  const final = total * multiplier;
-  $("total").textContent = total + " / 50";
-  $("final").textContent = final.toFixed(1).replace(/\.0$/,"") +
-    (difficulty === "easy" ? " / 60" : " / 75");
-  values.forEach((v,i)=>$("v"+i).textContent=v);
-}
-
-function selectDifficulty(level) {
-  difficulty = level;
-  multiplier = level === "easy" ? 1.2 : 1.5;
-  $("easy").classList.toggle("selected",level==="easy");
-  $("hard").classList.toggle("selected",level==="hard");
-  calculate();
-}
-
-function resetTimer() {
-  if (submitted) return;
-  hasInteracted = true;
-  clearInterval(timer);
-  remaining = 30;
-  $("countdown").textContent = remaining;
-
-  timer = setInterval(()=>{
-    remaining--;
-    $("countdown").textContent = remaining;
-
-    if (remaining <= 0) {
-      clearInterval(timer);
-      resetForm();
-    }
-  },1000);
-}
-
-function resetForm() {
-  clearInterval(timer);
-  submitted = false;
-  hasInteracted = false;
-  remaining = 30;
-
-  $("player").value = "";
-  $("date").value = "";
-  [0,1,2,3,4].forEach(i=>{
-    $("s"+i).value = 0;
-  });
-
-  selectDifficulty("easy");
-  calculate();
-  $("countdown").textContent = 30;
-  $("error").style.display = "none";
-  $("resultView").classList.add("hidden");
-  $("formView").classList.remove("hidden");
-}
-
-function finishRating() {
-  if (!$("player").value.trim()) {
-    $("error").style.display = "block";
-    $("player").focus();
-    return;
-  }
-
-  clearInterval(timer);
-  submitted = true;
-
-  const values = scores();
-  const total = values.reduce((a,b)=>a+b,0);
-  const final = total * multiplier;
-  const max = difficulty === "easy" ? 60 : 75;
-
-  $("outName").textContent = $("player").value.trim();
-  $("outDate").textContent = $("date").value
-    ? "Fight Date: " + $("date").value
-    : "Fight Date: Not specified";
-  $("outDifficulty").textContent =
-    (difficulty === "easy" ? "Easy – Prime Ceratosaurus" : "Hard – Adult Ceratosaurus") +
-    " · ×" + multiplier;
-
-  $("outRatings").innerHTML = categories.map((name,i)=>
-    '<div class="result-row"><span>'+name+'</span><strong>'+values[i]+' / 10</strong></div>'
-  ).join("");
-
-  $("outTotal").textContent = total + " / 50";
-  $("outFinal").textContent =
-    final.toFixed(1).replace(/\.0$/,"") + " / " + max;
-
-  $("formView").classList.add("hidden");
-  $("resultView").classList.remove("hidden");
-}
-
-[0,1,2,3,4].forEach(i=>{
-  $("s"+i).addEventListener("input",()=>{
-    calculate();
-    resetTimer();
-  });
-});
-
-$("player").addEventListener("input",()=>{
-  $("error").style.display = "none";
-  resetTimer();
-});
-
-$("date").addEventListener("change",resetTimer);
-
-$("easy").addEventListener("click",()=>{
-  selectDifficulty("easy");
-  resetTimer();
-});
-
-$("hard").addEventListener("click",()=>{
-  selectDifficulty("hard");
-  resetTimer();
-});
-
-$("finish").addEventListener("click",finishRating);
-$("another").addEventListener("click",resetForm);
-
-calculate();
-</script>
-</body>
-</html>
-nst values = scores();
-  const total = values.reduce((a,b)=>a+b,0);
-  const final = total * multiplier;
-  $("total").textContent = total + " / 50";
-  $("final").textContent = final.toFixed(1).replace(/\.0$/,"") +
-    (difficulty === "easy" ? " / 60" : " / 75");
-  values.forEach((v,i)=>$("v"+i).textContent=v);
-}
-
-function selectDifficulty(level) {
-  difficulty = level;
-  multiplier = level === "easy" ? 1.2 : 1.5;
-  $("easy").classList.toggle("selected",level==="easy");
-  $("hard").classList.toggle("selected",level==="hard");
-  calculate();
-}
-
-function resetTimer() {
-  if (submitted) return;
-  hasInteracted = true;
-  clearInterval(timer);
-  remaining = 30;
-  $("countdown").textContent = remaining;
-
-  timer = setInterval(()=>{
-    remaining--;
-    $("countdown").textContent = remaining;
-
-    if (remaining <= 0) {
-      clearInterval(timer);
-      resetForm();
-    }
-  },1000);
-}
-
-function resetForm() {
-  clearInterval(timer);
-  submitted = false;
-  hasInteracted = false;
-  remaining = 30;
-
-  $("player").value = "";
-  $("date").value = "";
-  [0,1,2,3,4].forEach(i=>{
-    $("s"+i).value = 0;
-  });
-
-  selectDifficulty("easy");
-  calculate();
-  $("countdown").textContent = 30;
-  $("error").style.display = "none";
-  $("resultView").classList.add("hidden");
-  $("formView").classList.remove("hidden");
-}
-
-function finishRating() {
-  if (!$("player").value.trim()) {
-    $("error").style.display = "block";
-    $("player").focus();
-    return;
-  }
-
-  clearInterval(timer);
-  submitted = true;
-
-  const values = scores();
-  const total = values.reduce((a,b)=>a+b,0);
-  const final = total * multiplier;
-  const max = difficulty === "easy" ? 60 : 75;
-
-  $("outName").textContent = $("player").value.trim();
-  $("outDate").textContent = $("date").value
-    ? "Fight Date: " + $("date").value
-    : "Fight Date: Not specified";
-  $("outDifficulty").textContent =
-    (difficulty === "easy" ? "Easy – Prime Ceratosaurus" : "Hard – Adult Ceratosaurus") +
-    " · ×" + multiplier;
-
-  $("outRatings").innerHTML = categories.map((name,i)=>
-    '<div class="result-row"><span>'+name+'</span><strong>'+values[i]+' / 10</strong></div>'
-  ).join("");
-
-  $("outTotal").textContent = total + " / 50";
-  $("outFinal").textContent =
-    final.toFixed(1).replace(/\.0$/,"") + " / " + max;
-
-  $("formView").classList.add("hidden");
-  $("resultView").classList.remove("hidden");
-}
-
-[0,1,2,3,4].forEach(i=>{
-  $("s"+i).addEventListener("input",()=>{
-    calculate();
-    resetTimer();
-  });
-});
-
-$("player").addEventListener("input",()=>{
-  $("error").style.display = "none";
-  resetTimer();
-});
-
-$("date").addEventListener("change",resetTimer);
-
-$("easy").addEventListener("click",()=>{
-  selectDifficulty("easy");
-  resetTimer();
-});
-
-$("hard").addEventListener("click",()=>{
-  selectDifficulty("hard");
-  resetTimer();
-});
-
-$("finish").addEventListener("click",finishRating);
-$("another").addEventListener("click",resetForm);
-
-calculate();
-</script>
-</body>
+let difficulty = "easy";  
+let multiplier = 1.2;  
+let timer = null;  
+let remaining = 30;  
+let hasInteracted = false;  
+let submitted = false;  
+  
+const $ = id => document.getElementById(id);  
+  
+function scores() {  
+  return [0,1,2,3,4].map(i => Number($("s"+i).value));  
+}  
+  
+function calculate() {  
+  const values = scores();  
+  const total = values.reduce((a,b)=>a+b,0);  
+  const final = total * multiplier;  
+  $("total").textContent = total + " / 50";  
+  $("final").textContent = final.toFixed(1).replace(/\.0$/,"") +  
+    (difficulty === "easy" ? " / 60" : " / 75");  
+  values.forEach((v,i)=>$("v"+i).textContent=v);  
+}  
+  
+function selectDifficulty(level) {  
+  difficulty = level;  
+  multiplier = level === "easy" ? 1.2 : 1.5;  
+  $("easy").classList.toggle("selected",level==="easy");  
+  $("hard").classList.toggle("selected",level==="hard");  
+  calculate();  
+}  
+  
+function resetTimer() {  
+  if (submitted) return;  
+  hasInteracted = true;  
+  clearInterval(timer);  
+  remaining = 30;  
+  $("countdown").textContent = remaining;  
+  
+  timer = setInterval(()=>{  
+    remaining--;  
+    $("countdown").textContent = remaining;  
+  
+    if (remaining <= 0) {  
+      clearInterval(timer);  
+      resetForm();  
+    }  
+  },1000);  
+}  
+  
+function resetForm() {  
+  clearInterval(timer);  
+  submitted = false;  
+  hasInteracted = false;  
+  remaining = 30;  
+  
+  $("player").value = "";  
+  $("date").value = "";  
+  [0,1,2,3,4].forEach(i=>{  
+    $("s"+i).value = 0;  
+  });  
+  
+  selectDifficulty("easy");  
+  calculate();  
+  $("countdown").textContent = 30;  
+  $("error").style.display = "none";  
+  $("resultView").classList.add("hidden");  
+  $("formView").classList.remove("hidden");  
+}  
+  
+function finishRating() {  
+  if (!$("player").value.trim()) {  
+    $("error").style.display = "block";  
+    $("player").focus();  
+    return;  
+  }  
+  
+  clearInterval(timer);  
+  submitted = true;  
+  
+  const values = scores();  
+  const total = values.reduce((a,b)=>a+b,0);  
+  const final = total * multiplier;  
+  const max = difficulty === "easy" ? 60 : 75;  
+  
+  $("outName").textContent = $("player").value.trim();  
+  $("outDate").textContent = $("date").value  
+    ? "Fight Date: " + $("date").value  
+    : "Fight Date: Not specified";  
+  $("outDifficulty").textContent =  
+    (difficulty === "easy" ? "Easy – Prime Ceratosaurus" : "Hard – Adult Ceratosaurus") +  
+    " · ×" + multiplier;  
+  
+  $("outRatings").innerHTML = categories.map((name,i)=>  
+    '<div class="result-row"><span>'+name+'</span><strong>'+values[i]+' / 10</strong></div>'  
+  ).join("");  
+  
+  $("outTotal").textContent = total + " / 50";  
+  $("outFinal").textContent =  
+    final.toFixed(1).replace(/\.0$/,"") + " / " + max;  
+  
+  $("formView").classList.add("hidden");  
+  $("resultView").classList.remove("hidden");  
+}  
+  
+[0,1,2,3,4].forEach(i=>{  
+  $("s"+i).addEventListener("input",()=>{  
+    calculate();  
+    resetTimer();  
+  });  
+});  
+  
+$("player").addEventListener("input",()=>{  
+  $("error").style.display = "none";  
+  resetTimer();  
+});  
+  
+$("date").addEventListener("change",resetTimer);  
+  
+$("easy").addEventListener("click",()=>{  
+  selectDifficulty("easy");  
+  resetTimer();  
+});  
+  
+$("hard").addEventListener("click",()=>{  
+  selectDifficulty("hard");  
+  resetTimer();  
+});  
+  
+$("finish").addEventListener("click",finishRating);  
+$("another").addEventListener("click",resetForm);  
+  
+calculate();  
+</script>  </body>  
 </html>
